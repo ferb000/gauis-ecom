@@ -1,6 +1,6 @@
 import pool from "../../configs/db.js";
 
-// -------- Customer (My Orders) --------
+// Customer 
 
 export async function listMyOrders(userId) {
   const { rows } = await pool.query(
@@ -52,7 +52,7 @@ export async function getMyOrderDetail(userId, orderId) {
   return { order, items: itemsRes.rows };
 }
 
-// Optional: allow customer cancel only if still pending
+
 export async function cancelMyOrder(userId, orderId) {
   const { rows } = await pool.query(
     `
@@ -67,7 +67,7 @@ export async function cancelMyOrder(userId, orderId) {
   return rows[0] || null;
 }
 
-// -------- Admin --------
+//  Admin 
 
 export async function adminListOrders({ status } = {}) {
   const values = [];
@@ -132,14 +132,7 @@ export async function adminGetOrderDetail(orderId) {
   return { order, items: itemsRes.rows };
 }
 
-/**
- * Admin status transition rules (simple and realistic):
- * pending -> confirmed -> delivered
- * pending -> cancelled
- * confirmed -> cancelled (optional; set if your ops allows it)
- *
- * delivered is final (cannot change).
- */
+
 function canTransition(current, next) {
   if (current === next) return true;
 
@@ -154,7 +147,7 @@ function canTransition(current, next) {
 }
 
 export async function adminUpdateOrderStatus(orderId, nextStatus) {
-  // read current status
+
   const currentRes = await pool.query(
     `SELECT id, status FROM orders WHERE id = $1 LIMIT 1`,
     [orderId]

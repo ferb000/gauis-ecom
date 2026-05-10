@@ -1,9 +1,6 @@
 import pool from "../../configs/db.js";
 
-/**
- * Create inventory row if missing, or overwrite quantity (admin tool).
- * Real-world: use this for initial setup or manual corrections.
- */
+
 export async function upsertInventory(payload) {
   const { rows } = await pool.query(
     `
@@ -22,17 +19,12 @@ export async function upsertInventory(payload) {
   return rows[0];
 }
 
-/**
- * Adjust stock incrementally and safely.
- * Uses SELECT ... FOR UPDATE to lock the inventory row.
- * Prevents negative quantities.
- */
+
 export async function adjustStock(productId, delta) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    // Lock inventory row (prevents race conditions)
     const invRes = await client.query(
       `SELECT id, product_id, quantity, low_stock_alert
        FROM product_inventory

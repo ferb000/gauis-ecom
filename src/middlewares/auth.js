@@ -18,7 +18,7 @@ export function authRequired() {
         return res.status(401).json({ success: false, message: "Invalid or expired token" });
       }
 
-      // Optional but real-world: confirm user still exists
+      
       const { rows } = await db.query(
         "SELECT id, phone_number, email, full_name, role, is_verified FROM users WHERE id = $1 LIMIT 1",
         [payload.userId]
@@ -28,7 +28,7 @@ export function authRequired() {
         return res.status(401).json({ success: false, message: "User not found" });
       }
 
-      req.user = rows[0]; // attach user to request
+      req.user = rows[0]; 
       next();
     } catch (err) {
       next(err);
@@ -36,7 +36,7 @@ export function authRequired() {
   };
 }
 
-// Optional: admin-only middleware
+
 export function adminOnly() {
   return (req, res, next) => {
     if (req.user?.role !== "admin") {

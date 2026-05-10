@@ -1,9 +1,6 @@
 import pool from "../../configs/db.js";
 
-/**
- * Get or create the user's active cart.
- * Real-world: keep a single "active" cart open.
- */
+
 export async function getOrCreateActiveCart(userId) {
   const existing = await pool.query(
     `SELECT id, user_id, status, created_at, updated_at
@@ -55,9 +52,7 @@ export async function getCartDetails(userId) {
   return { cart, items: itemsRes.rows, subtotal };
 }
 
-/**
- * Checks product is active and returns current sell price + available stock.
- */
+
 async function getProductPricingAndStock(productId) {
   const prodRes = await pool.query(
     `SELECT id, name, price, discount_price, is_active
@@ -88,7 +83,7 @@ async function getProductPricingAndStock(productId) {
     [productId]
   );
 
-  // Real-world: if no inventory record, treat as not sellable
+  
   if (!invRes.rows.length) {
     const e = new Error("Product inventory not set");
     e.status = 409;
@@ -101,12 +96,7 @@ async function getProductPricingAndStock(productId) {
   return { sellPrice, available };
 }
 
-/**
- * Add to cart:
- * - checks stock
- * - merges duplicates (same product)
- * - stores price snapshot in cart_items.price
- */
+
 export async function addToCart(userId, productId, quantityToAdd) {
   const cart = await getOrCreateActiveCart(userId);
 
@@ -133,7 +123,7 @@ export async function addToCart(userId, productId, quantityToAdd) {
     throw e;
   }
 
-  // Upsert cart item
+
   if (existingItemRes.rows.length) {
     const updated = await pool.query(
       `UPDATE cart_items
@@ -160,10 +150,7 @@ export async function addToCart(userId, productId, quantityToAdd) {
   }
 }
 
-/**
- * Update item quantity (set absolute qty).
- * Stock checked against inventory.
- */
+
 export async function updateCartItemQuantity(userId, cartItemId, newQty) {
   const cart = await getOrCreateActiveCart(userId);
 

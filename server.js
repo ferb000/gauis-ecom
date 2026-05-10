@@ -4,7 +4,7 @@ import checkRouter from './src/routes/check.js';
 
 const PORT = process.env.PORT || 5000;
 
-// testing route
+
 app.use('/check', checkRouter);
 
 

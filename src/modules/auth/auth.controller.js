@@ -14,14 +14,14 @@ export async function requestOtp(req, res, next) {
 
     const { otp, expiresAt } = await createOtp(phone_number);
 
-    // TODO: integrate SMS provider (Hubtel/Termii).
+    // yet TODO: integrate SMS provider for otp.
     const response = {
       success: true,
       message: "OTP sent",
       expires_at: expiresAt,
     };
 
-    // Dev-only convenience
+    // Dev-only
     if (process.env.NODE_ENV !== "production") {
       response.dev_otp = otp;
     }

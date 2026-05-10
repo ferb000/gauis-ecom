@@ -1,9 +1,8 @@
 import pool from "../../configs/db.js";
 
-/**
- * Helper: ensures only ONE default address per user.
- * Must be used inside a transaction when changing default.
- */
+
+// Helper: ensures only ONE default address per user.
+
 async function clearDefaultForUser(client, userId) {
   await client.query(
     `UPDATE addresses SET is_default = FALSE WHERE user_id = $1 AND is_default = TRUE`,
@@ -27,7 +26,7 @@ export async function createAddress(userId, payload) {
   try {
     await client.query("BEGIN");
 
-    // If this is the first address, make it default automatically
+    // make it default automatically
     const existing = await client.query(
       `SELECT COUNT(*)::int AS count FROM addresses WHERE user_id = $1`,
       [userId]
@@ -148,7 +147,7 @@ export async function deleteAddress(userId, addressId) {
       [addressId, userId]
     );
 
-    // If deleted address was default, promote another address to default (if any)
+    // If deleted address was default, promote another address to default 
     if (wasDefault) {
       const remaining = await client.query(
         `SELECT id FROM addresses WHERE user_id = $1 ORDER BY id DESC LIMIT 1`,

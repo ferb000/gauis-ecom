@@ -6,7 +6,7 @@ export async function upsert(req, res, next) {
     const payload = upsertInventorySchema.parse(req.body);
     const row = await upsertInventory(payload);
 
-    // Optional: log admin action later in admin_logs (we’ll add this next)
+
     res.status(201).json({ success: true, inventory: row });
   } catch (err) {
     next(err);

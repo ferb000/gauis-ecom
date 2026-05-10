@@ -34,7 +34,7 @@ export async function updateCategory(categoryId, payload) {
 }
 
 export async function deleteCategory(categoryId) {
-  // Optional: block delete if products exist in category (real-world safer)
+  // block delete if products exist in categor
   const { rows: countRows } = await pool.query(
     `SELECT COUNT(*)::int AS count FROM products WHERE category_id = $1`,
     [categoryId]

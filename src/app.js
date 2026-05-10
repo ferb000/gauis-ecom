@@ -1,9 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-
-
-
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./configs/swagger.js";
 
 import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/users/users.routes.js";
@@ -14,6 +13,7 @@ import inventoryRoutes from "./modules/inventory/inventory.routes.js";
 import cartRoutes from "./modules/cart/cart.routes.js";
 import checkoutRoutes from "./modules/checkout/checkout.routes.js";
 import ordersRoutes from "./modules/orders/orders.routes.js";
+import healthRoutes from "./routes/health.js";
 
 
 
@@ -25,7 +25,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/health", (req, res) => res.json({ ok: true }));
+// Swagger Documentation
+app.use("/api/docs", swaggerUi.serve);
+app.get("/api/docs", swaggerUi.setup(swaggerSpec, { explorer: true }));
+
+app.use("/health", healthRoutes);
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
@@ -37,7 +41,7 @@ app.use("/cart", cartRoutes);
 app.use("/checkout", checkoutRoutes);
 app.use("/orders", ordersRoutes);
 
-// Global error handler
+
 app.use((err, req, res, next) => {
   console.error(err);
   const status = err.status || 500;

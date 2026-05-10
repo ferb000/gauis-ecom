@@ -39,19 +39,229 @@ import {
 const router = Router();
 
 /**
- * SAFEST ROUTE ORDER:
- * Put ALL fixed/static paths first, then param routes (/:id).
- * This prevents "/admin/..." being captured by "/:id".
+ * @swagger
+ * /orders:
+ *   get:
+ *     summary: Get user orders
+ *     description: Retrieves all orders for the authenticated user
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+ *         description: Filter by order status
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number for pagination
+ *     responses:
+ *       200:
+ *         description: List of user orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Order'
+ *                 total:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
  */
-
-// ===== Admin routes (static prefixes first) =====
-router.get("/admin/all", authRequired(), adminOnly(), adminOrders);
-router.get("/admin/:id", authRequired(), adminOnly(), adminOrderDetail);
-router.patch("/admin/:id/status", authRequired(), adminOnly(), adminSetStatus);
-
-// ===== Customer routes =====
 router.get("/", authRequired(), myOrders);
+
+/**
+ * @swagger
+ * /orders/{id}:
+ *   get:
+ *     summary: Get order details
+ *     description: Retrieves detailed information about a specific order
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Order ID
+ *     responses:
+ *       200:
+ *         description: Order details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 order:
+ *                   $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Order not found
+ *       401:
+ *         description: Unauthorized
+ *   patch:
+ *     summary: Cancel order
+ *     description: Cancels a pending order
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Order cancelled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Cannot cancel order in current status
+ *       404:
+ *         description: Order not found
+ *       401:
+ *         description: Unauthorized
+ */
 router.patch("/:id/cancel", authRequired(), myCancelOrder);
 router.get("/:id", authRequired(), myOrderDetail);
+
+/**
+ * @swagger
+ * /orders/admin/all:
+ *   get:
+ *     summary: List all orders (Admin only)
+ *     description: Retrieves all orders in the system. Requires admin privileges.
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+ *         description: Filter by order status
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: List of all orders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 orders:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Order'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin only
+ */
+router.get("/admin/all", authRequired(), adminOnly(), adminOrders);
+
+/**
+ * @swagger
+ * /orders/admin/{id}:
+ *   get:
+ *     summary: Get order details (Admin only)
+ *     description: Retrieves detailed information about an order. Requires admin privileges.
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Order details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Order not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin only
+ *   patch:
+ *     summary: Update order status (Admin only)
+ *     description: Updates the status of an order
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: ['status']
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+ *                 example: "shipped"
+ *     responses:
+ *       200:
+ *         description: Order status updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Order'
+ *       400:
+ *         description: Invalid status
+ *       404:
+ *         description: Order not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - Admin only
+ */
+router.get("/admin/:id", authRequired(), adminOnly(), adminOrderDetail);
+router.patch("/admin/:id/status", authRequired(), adminOnly(), adminSetStatus);
 
 export default router;
